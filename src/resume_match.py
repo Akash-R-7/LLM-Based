@@ -16,15 +16,16 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 
 # Get the list of all files and directories
-def get_files(num_of_files):
-    resume_pdfs_path = "data/data/"
+def get_files():
+    resume_pdfs_path = "test_resumes/"
+    # resume_pdfs_path = "data/data/"
     file_paths_ls = []
     for (root, dirs, file) in os.walk(resume_pdfs_path):
-        if root == resume_pdfs_path + "SALES":
-            for i in range(num_of_files):
-                f = file[i]
-                file_path = root + "/" + f
-                file_paths_ls.append(file_path)
+        for pdf in file:
+            f = pdf
+            file_path = root + f
+            # file_path = root + "/" + f
+            file_paths_ls.append(file_path)
 
     return file_paths_ls
 
@@ -32,18 +33,23 @@ def get_files(num_of_files):
 
 def page_extractor(files_path): # PDF Parsing
     # dict of lists
+    ct = 1
     pdfs_dict = {}
     for file in files_path:
+        if ct % 200 == 0:
+            print("200 resumes parsed.......")
+        
         file_path_key = file[10:]
         pdfs_dict[file_path_key] = []
         loader = PDFMinerLoader(file)
 
         # Load Documents and split into chunks. Chunks are returned as Documents.
         pages = loader.load_and_split(text_splitter=RecursiveCharacterTextSplitter(chunk_size = 4000, chunk_overlap=0))
-        # print(pages[0].page_content)
         for page in pages:
             data = page.page_content
             pdfs_dict[file_path_key].append(data)
+        
+        ct += 1
 
         # print('------------------------------')
     return pdfs_dict
@@ -122,10 +128,11 @@ def make_jd_data(n_jds, text_splitter):
 
     jobs_data = []
     for i in range(len(job_des)):
-        if not "\"N/A\"" in model_response[i].strip().split(' '):
-            jobs_data.append(job_des[i] + "\n" + model_response[i])
-        else:
-            jobs_data.append(job_des[i])
+        needed_skills = model_response[i].split('\n')
+        needed_skills = "\n".join([ns.strip(",") for ns in needed_skills][1:4])
+        complete_job_des = needed_skills + "\n" + job_des[i] 
+        
+        jobs_data.append(complete_job_des)
 
     jobs_metadata = [{'company': comp, 'position': pos} for comp, pos in tuple(n_jds.apply(lambda row: (row['company_name'], row['position_title']), axis=1))]
 
@@ -170,7 +177,7 @@ def main():
     args = vars(ap.parse_args())
     # display a friendly message to the user
 
-    files_path = get_files(2) # to be adjusted for all resumes
+    files_path = get_files() # to be adjusted for all resumes
 
     pdfs_dict = page_extractor(files_path)
     print('Resume PDF extraction done.......')
@@ -191,6 +198,7 @@ def main():
     print('Pre-processing done.......')
     print('Finding matching job descriptions and resumes.......')
 
+    print('------------------------------')
     for i in range(len(jd_data)):
         job_embedding, cvs_embedding, query_meta = embed_docs(jd_data[i], resume_docs)
         most_matching_resume = get_similar_docs(job_embedding, cvs_embedding, query_meta)
