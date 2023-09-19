@@ -3,8 +3,8 @@
 #### The follwing repository matches resume from various categories to given job descriptions. 
 
 ### Datasets:
-#### Resume Dataset: [Kaggle Resume Dataset]("https://www.kaggle.com/datasets/snehaanbhawal/resume-dataset")
-#### Job Descriptions: [Job Description Dataset]("https://huggingface.co/datasets/jacob-hugging-face/job-descriptions/viewer/default/train?row=0")
+#### Resume Dataset: [Kaggle Resume Dataset](https://www.kaggle.com/datasets/snehaanbhawal/resume-dataset)
+#### Job Descriptions: [Job Description Dataset](https://huggingface.co/datasets/jacob-hugging-face/job-descriptions/viewer/default/train?row=0)
 
 ### Task Action
 * <strong>PDF Extraction</strong>: A PDF extraction tool is used to parse the PDF storing the metadata associated with it.
